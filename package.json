@@ -1,0 +1,22 @@
+{
+  "name": "mini-messenger",
+  "version": "1.0.0",
+  "description": "A clone, simple version of Messenger (chat-app)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/notu-ngoctrung/mini-messenger.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/notu-ngoctrung/mini-messenger/issues"
+  },
+  "homepage": "https://github.com/notu-ngoctrung/mini-messenger#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
