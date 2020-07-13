@@ -24,9 +24,9 @@
       socket.on('message-new', (username, data) => {
         addMessage(`${username}: ${data}`);
       });
-      socket.on('disconnect', () => {
-        socket.emit('leave', username);
-      });
+      // socket.on('disconnect', () => {
+      //   socket.emit('leave', username);
+      // });
     </script>
   </body>
 </html>
