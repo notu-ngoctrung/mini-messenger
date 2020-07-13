@@ -1,8 +1,8 @@
 const express = require('express');
+const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 
-const app = express();
 const port = process.env.PORT || 3000;
 
 app.use('/static', express.static(__dirname + '/static'));
@@ -16,5 +16,18 @@ http.listen(port, () => {
 });
 
 io.on('connection', (socket) => {
+  socket.on('join', (username) => {
+    console.log(`User {${username}} joined the chat`);
+    socket.broadcast.emit('user-new', data);
+  });
 
+  socket.on('leave', (username) => {
+    console.log(`User {${username}} left the chat`);
+    socket.broadcast.emit('user-left', data);
+  });
+
+  socket.on('message', (username, data) => {
+    console.log(`${this.username} sent a message`);
+    socket.broadcast.emit('message-new', username, data);
+  });
 });

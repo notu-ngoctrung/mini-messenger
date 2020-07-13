@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Demo Chat-App</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <link rel="stylesheet" href="static/style.css">
+  </head>
+  <body>
+    <ul class="messages"></ul>
+    <form>
+      <input type="text" class="input" autocomplete="off" autofocus />
+      <button>Send</button>
+    </form>
+    <script src="static/client.js"></script>
+    <script>
+      const socket = io();
+      socket.emit('join', username);
+      socket.on('user-new', (data) => {
+        addMessage(`${username} has joined the chat.`);
+      });
+      socket.on('user-left', (data) => {
+        addMessage(`${username} has left the chat.`);
+      });
+      socket.on('message-new', (username, data) => {
+        addMessage(`${username}: ${data}`);
+      });
+      socket.on('disconnect', () => {
+        socket.emit('leave', username);
+      });
+    </script>
+  </body>
+</html>
