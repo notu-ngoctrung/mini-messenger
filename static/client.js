@@ -1,10 +1,11 @@
 // import io from 'socket.io-client';
 
-// const socket = io('http://localhost');
 const form = document.querySelector("form");
 const input = document.querySelector(".input"); // Get the first element named "input"
 const messages = document.querySelector(".messages"); 
 const username = prompt("Please enter a username: ", "");
+
+const socket = io();
 
 form.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -25,14 +26,17 @@ function addMessage(message) {
   window.scrollTo(0, document.body.scrollHeight);
 }
 
-// socket.on('user-new', (data) => {
-//   addMessage(`${username} has joined the chat.`);
-// });
+socket.emit('join', username);
 
-// socket.on('user-left', (data) => {
-//   addMessage(`${username} has left the chat.`);
-// });
+socket.on('user-new', (username) => {
+  addMessage(`${username} has joined the chat.`);
+});
 
-// socket.on('message-new', (username, data) => {
-//   addMessage(`${username}: ${data}`);
-// });
+socket.on('user-left', (username) => {
+  addMessage(`${username} has left the chat.`);
+});
+
+socket.on('message-new', (username, data) => {
+  addMessage(`${username}: ${data}`);
+});
+

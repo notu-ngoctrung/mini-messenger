@@ -18,7 +18,7 @@ http.listen(port, () => {
 io.on('connection', (socket) => {
   socket.on('join', (username) => {
     console.log(`User {${username}} joined the chat`);
-    socket.broadcast.emit('user-new', data);
+    socket.broadcast.emit('user-new', username);
   });
 
   socket.on('leave', (username) => {
@@ -27,7 +27,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('message', (username, data) => {
-    console.log(`${this.username} sent a message`);
+    console.log(`${username} sent a message`);
     socket.broadcast.emit('message-new', username, data);
   });
 });
