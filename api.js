@@ -1,4 +1,4 @@
-import express, { response } from 'express';
+import express from 'express';
 import bcrypt from 'bcrypt';
 import Sequelize from 'sequelize';
 import {User, Conversation, Message} from './database';
