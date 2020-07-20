@@ -1,7 +1,6 @@
 import Sequelize from 'sequelize';
-import config from './config';
 
-const db = new Sequelize('testdb', config.db.username, config.db.password, {
+const db = new Sequelize(config.db.dbName, config.db.username, config.db.password, {
   host: 'localhost',
   dialect: 'postgres',
   pool: {
@@ -15,7 +14,6 @@ const db = new Sequelize('testdb', config.db.username, config.db.password, {
 const User = db.define('user', {
   id: {
     type: Sequelize.INTEGER,
-    autoIncrement: true,
     primaryKey: true
   },
   username: {
@@ -34,7 +32,6 @@ const User = db.define('user', {
 const Conversation = db.define('conversation', {
   id: {
     type: Sequelize.INTEGER,
-    autoIncrement: true,
     primaryKey: true
   },
   user_id_1: {
@@ -52,7 +49,6 @@ const Conversation = db.define('conversation', {
 const Message = db.define('message', {
   id: {
     type: Sequelize.INTEGER,
-    autoIncrement: true,
     primaryKey: true
   },
   conversation_id: {
@@ -66,12 +62,12 @@ const Message = db.define('message', {
 
 // User-Conversation relationship
 User.hasMany(Conversation, {
-  as: 'sender',
+  as: 'peer_id_1',
   foreignKey: 'user_id_1'
 });
 
 User.hasMany(Conversation, {
-  as: 'receiver',
+  as: 'peer_id_2',
   foreignKey: 'user_id_2'
 });
 
@@ -87,7 +83,7 @@ Conversation.belongsTo(User, {
 
 // Conversation-Message relationship
 Conversation.hasMany(Message, {
-  as: 'message',
+  as: 'messages',
   foreignKey: 'conversation_id'
 });
 
