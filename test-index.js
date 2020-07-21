@@ -1,5 +1,6 @@
 import express from 'express';
 import router from './test-api';
+import bodyParser from 'body-parser';
 import {db, User, Conversation, Message} from './test-db';
 
 const app = express();
@@ -7,6 +8,7 @@ const http = require('http').Server(app);
 const port = process.env.PORT || 3000;
 
 app.use(router);
+app.use(bodyParser.json());
 
 async function createDatabase() {
   const user = await User.create({
@@ -39,13 +41,13 @@ async function printAll() {
   let users = await User.findAll({
     include: [{
       model: Conversation,
-      as: 'sender'
+      as: 'peer_id_2'
     }]
   });
   const convs = await Conversation.findAll({
     include: [{
       model: Message,
-      as: 'message'
+      as: 'messages'
     }]
   });
   const mess = await Message.findAll();
@@ -53,6 +55,9 @@ async function printAll() {
   console.log(JSON.stringify(users, null, 2));
   console.log(JSON.stringify(convs, null, 2));
   console.log(JSON.stringify(mess, null, 2));
+  const tmp = JSON.parse(JSON.stringify(users, null, 2));
+  for(let t = 0; t < tmp.length; t++)
+    console.log('dfjdfjsfj ', tmp[t].peer_id_2);
 }
 
 async function doSomething() {
@@ -73,10 +78,10 @@ http.listen(port, async () => {
       console.log("failed to connect to database", err);
     });
   await db.sync({force: true});
-  await User.sync({force: true});
-  await Conversation.sync({force: true});
-  await Message.sync({force: true});
-  // await createDatabase();
+  await User.sync();
+  await Conversation.sync();
+  await Message.sync();
+  await createDatabase();
   await printAll();
   await User.findAll({
     where: {
@@ -84,12 +89,6 @@ http.listen(port, async () => {
     }
   }).then((users) => {
     users.every((user) => {
-      // await Conversation.destroy({
-      //   where: {
-      //     user_id_2: user.id
-      //   }
-      // });
-      // user.sender.destroy();
       user.destroy();
       console.log('completed ');
     });
@@ -102,7 +101,7 @@ http.listen(port, async () => {
   const users = await User.findAll({
     include: [{
       model: Conversation,
-      as: 'receiver'
+      as: 'peer_id_2'
     }]
   });
   await doSomething();

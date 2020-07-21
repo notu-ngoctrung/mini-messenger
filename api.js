@@ -57,7 +57,7 @@ route.post('/api/conversation', async (req, res) => {
   if (req.headers && req.headers.authorization) {
     const token = req.headers.authorization;
     const decoded = jwt.verify(token, config.keys.secret);
-    console.log(`${decoded.userID} create a conversation`);
+    console.log(`${decoded.userID} creates a conversation`);
     const user1 = await User.findByPk(decoded.userID).catch(() => {
       res.status(400).send(`An error happened in finding ID ${decoded.userID}`);
     });
@@ -66,12 +66,12 @@ route.post('/api/conversation', async (req, res) => {
       return;
     }
     const user2 = await User.findOne({
-      where: { username: req.body.username_2 }
+      where: { username: req.body.peerName }
     }).catch(() => {
-      res.status(400).send(`An error happened in finding ${req.body.username_2}`);
+      res.status(400).send(`An error happened in finding ${req.body.peerName}`);
     });
     if (user2 === null) {
-      res.status(404).send(`Cannot get conversations: ${req.body.username_2} not found`);
+      res.status(404).send(`Cannot get conversations: ${req.body.peerName} not found`);
       return;
     }
     Conversation.create({
@@ -83,7 +83,7 @@ route.post('/api/conversation', async (req, res) => {
       res.status(400).send(`An error happened in creating a conversation between ${user1.username} and ${user2.username}`);
     });
   } else
-  res.status(400).send('Empty header');
+    res.status(400).send('Empty header');
 });
 
 route.get('/api/conversation', async (req, res) => {

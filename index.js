@@ -28,10 +28,19 @@ io.on('connection', (socket) => {
   socket.on('message', (sender, receiver, data) => {
     console.log(`${sender} sent a message to ${receiver}`);
     try {
-      socket.to(socketMap.get(receiver)).emit('message-new', sender, receiver, data);
+      socket.to(socketMap.get(receiver)).emit('message-new', sender, data);
     } 
     catch (err) {
       console.log(`An error happened when ${sender} sent a message to ${receiver}`);
+    }
+  });
+  socket.on('conversation', (sender, receiver) => {
+    console.log(`Inform ${receiver} of a new conversation with ${sender}`);
+    try {
+      socket.to(socketMap.get(receiver)).emit('conversation-new', sender);
+    }
+    catch (err) {
+      console.log(`An error happened when ${sender} informed ${receiver} of a new conversation`);
     }
   });
 });

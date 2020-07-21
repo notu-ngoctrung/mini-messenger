@@ -1,59 +1,195 @@
 // import io from 'socket.io-client';
 
-const form = document.querySelector('form');
-const messageInput = document.querySelector('.messageInput'); 
-const userInput = document.querySelector('.userInput'); 
+const messageForm = document.querySelector('#messageForm');
+const userForm = document.querySelector('#userForm');
+const messageInput = document.querySelector('#messageInput'); 
+const userInput = document.querySelector('#userInput'); 
+const userList = document.querySelector('#user-list');
 const currentConversation = document.querySelector('.messages'); 
 
+/**
+ * {
+ *   peerName: string
+ *   messages: [...content]
+ * }
+ */
 const conversations = [];
+
+// Disable form at the beginning
+for(let i = 0; i < messageForm.elements.length; i++) 
+  messageForm.elements[i].readOnly = true;
 
 let currentPeerName = '';
 
 askUser()
-  .then(({username, token}) => {
+  .then(async ({username, token}) => {
     const socket = io();
 
-    form.addEventListener('submit', (event) => {
+    await getInitialDataFromServer(username, token);
+
+    userForm.addEventListener('submit', async (event) => {
+      console.log('dkfkf');
       event.preventDefault();
-      processMessage(currentPeerName, currentPeerName, username, input.value);
-      socket.emit('message', username, currentPeerName, input.value);
-    
-      input.value = '';
+      if (searchForConversation(userInput.value) === false)  {
+        let isSuccessful = await addNewConversation(username, userInput.value, token);
+        if (!isSuccessful)
+          alert('Cannot create a new conversation');
+        else
+           socket.emit('conversation', username, userInput.value);
+      }
+      resetMessageList(userInput.value);
+      userInput.value = '';
+    });
+
+    messageForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      processMessage(currentPeerName, currentPeerName, `${username}: ${messageInput.value}`);
+      postMessage(currentPeerName, messageInput.value, token);
+      socket.emit('message', username, currentPeerName, messageInput.value);
+      messageInput.value = '';
       return false;
     }, false);
 
-    // addMessage(`Me: You have joined the chat as ${username}.`);
+    addMessage(`Me: You have joined the chat as ${username} ${token}.`);
 
     socket.emit('join', username);
-
-    // socket.on('user-new', (username) => {
-    //   addMessage(`${username} has joined the chat.`);
-    // });
     
-    // socket.on('user-left', (username) => {
-    //   addMessage(`${username} has left the chat.`);
-    // });
-    
-    socket.on('message-new', (sender, data) => processMessage(currentPeerName, sender, sender, data));
+    socket.on('message-new', (sender, data) => processMessage(currentPeerName, sender, `${sender}: ${data}`));
+    socket.on('conversation-new', async (sender) => {
+      let isSuccessful = await addNewConversation(username, sender, token);
+      if (!isSuccessful)
+        alert('Cannot create a new conversation');
+    });
   });
 
-/** Helpers function (later moved) */
+/** Helpers functions (will be moved later) */
 
-function processMessage(currentPeerName, peerName, sender, data) {
-  conversations.forEach(conversation => {
-    if (conversation.username === sender) {
-      conversation.messages.append({
-
-      })
-    }
-  });
+// Do more efficiently??
+function searchForConversation(peerName) {
+  for(let i = 0; i < conversations.length; i++)
+    if (conversations[i].peerName === peerName)
+      return true;
+  return false;
 }
 
 function addMessage(message) {
   const li = document.createElement('li');
   li.innerHTML = message;
-  messages.appendChild(li);
+  currentConversation.appendChild(li);
   window.scrollTo(0, document.body.scrollHeight);
+}
+
+// Do something more efficiently????
+function resetMessageList(peerName) {
+  currentPeerName = peerName;
+  currentConversation.innerHTML = '';
+  for(let i = 0; i < conversations.length; i++) {
+    const conversation = conversations[i];
+    if (conversation.peerName === peerName) {
+      for(let j = 0; j < conversation['messages'].length; j++)
+        addMessage(conversation['messages'][j]);
+      break;
+    }
+  }
+  if (conversations.length > 0)
+    for(let i = 0; i < messageForm.elements.length; i++) 
+      messageForm.elements[i].readOnly = false;
+}
+
+async function addNewConversation(myName, peerName, token) {
+  let isSuccessful = true;
+  await fetch('/api/conversation', {
+    method: 'POST',
+    headers: {
+      'Content-type': 'application/json; charset=UTF-8',
+      'Authorization': token
+    },
+    body: JSON.stringify({
+      peerName: peerName
+    })
+  }).then((res) => {
+    if (res.status === 400 || res.status === 404) {
+      console.log('addNewConversation: ', res.json());
+      isSuccessful = false;
+    }
+  }).catch((err) => {
+    isSuccessful = false;
+    console.log('addNewConversation: ', err);
+  });
+  if (!isSuccessful)
+    return isSuccessful;
+  conversations.push({
+    peerName: peerName,
+    messages: []
+  });
+  addNewConversationHTML(peerName);
+  return true;
+}
+
+function addNewConversationHTML(peerName) {
+  const li = document.createElement('li');
+  const conversationButton = document.createElement('button');
+  conversationButton.className = 'conversation-button';
+  conversationButton.innerHTML = peerName;
+  conversationButton.peerName = peerName;
+  conversationButton.addEventListener('click', (event) => resetMessageList(event.target.peerName));
+  li.appendChild(conversationButton);
+  userList.appendChild(li);
+}
+
+async function getInitialDataFromServer(username, token) {
+  fetch('/api/conversation', {
+    method: 'GET',
+    headers: {
+      'Authorization': token
+    }
+  }).then((res) => res.json())
+    .then((res) => {
+      let resObj = JSON.parse(res);
+      console.log(resObj);
+      for(let i = 0; i < resObj.length; i++) {
+        const messages = [];
+        const peerName = (resObj[i].user_id_1 === username ? resObj[i].user_id_2 : resObj[i].user_id_1);
+        for(let j = 0; j < resObj['messages'].length; j++)
+          messages.push(resObj['messages'][j].content);
+        conversations.push({
+          peerName: peerName,
+          messages: messages
+        });
+        // Add HTML element
+        addNewConversationHTML(peerName);
+      }
+      if (conversations.length > 0)
+        for(let i = 0; i < messageForm.elements.length; i++) 
+          messageForm.elements[i].readOnly = false;
+    });
+}
+
+function processMessage(currentPeerName, peerName, message) {
+  // use foreach
+  for(let i = 0; i < conversations.length; i++) {
+    const conversation = conversations[i];
+    if (conversation.peerName === peerName) {
+      conversation.messages.push(message);
+      break;
+    }
+  }
+  if (currentPeerName === peerName)
+    addMessage(message);
+}
+
+async function postMessage(receiver, message, token) {
+  fetch('/api/conversation/message', {
+    method: 'POST',
+    headers: {
+      'Content-type': 'application/json; charset=UTF-8',
+      'Authorization': token
+    },
+    body: JSON.stringify({
+      receiver: receiver,
+      content: message
+    })
+  });
 }
 
 async function checkUsername(username) {
@@ -78,21 +214,20 @@ async function login(username, password) {
   let token = '';
   await fetch('/api/login', {
     method: 'POST',
+    headers: {
+      'Content-type': 'application/json; charset=UTF-8'
+    },
     body: JSON.stringify({
       username: username,
       password: password
-    }),
-    headers: {
-      'Content-type': 'application/json; charset=UTF-8'
-    }
-  }).then((res) => {
+    })
+  }).then((res) => res.json())
+    .then((res) => {
     console.log(res.status);
     if (res.status === 404 || res.status === 409) 
       isSuccessful = false;
-    else {
-      token = res.body.jwtToken;
-      console.log(res.body);
-    }
+    else 
+      token = res.jwtToken;
   });
   return { isSuccessful, token };
 }
@@ -102,13 +237,13 @@ async function register(username, password) {
   let isSuccessful = true;
   await fetch('/api/register', {
     method: 'POST',
+    headers: {
+      'Content-type': 'application/json; charset=UTF-8'
+    },
     body: JSON.stringify({
       username: username,
       password: password
-    }),
-    headers: {
-      'Content-type': 'application/json; charset=UTF-8'
-    }
+    })
   }).then((res) => {
     if (res.status === 409) {
       isSuccessful = false;

@@ -1,7 +1,7 @@
 import Sequelize from 'sequelize';
 import config from './config';
 
-const db = new Sequelize('testdb', config.db.username, config.db.password, {
+const db = new Sequelize(config.db.dbName, config.db.username, config.db.password, {
   host: 'localhost',
   dialect: 'postgres',
   pool: {
@@ -62,16 +62,18 @@ const Message = db.define('message', {
   content: {
     type: Sequelize.TEXT
   }
+}, {
+  freezeTableName: true
 });
 
 // User-Conversation relationship
 User.hasMany(Conversation, {
-  as: 'sender',
+  as: 'peer_id_1',
   foreignKey: 'user_id_1'
 });
 
 User.hasMany(Conversation, {
-  as: 'receiver',
+  as: 'peer_id_2',
   foreignKey: 'user_id_2'
 });
 
@@ -87,7 +89,7 @@ Conversation.belongsTo(User, {
 
 // Conversation-Message relationship
 Conversation.hasMany(Message, {
-  as: 'message',
+  as: 'messages',
   foreignKey: 'conversation_id'
 });
 
