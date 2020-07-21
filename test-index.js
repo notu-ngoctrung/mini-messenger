@@ -47,7 +47,8 @@ async function printAll() {
   const convs = await Conversation.findAll({
     include: [{
       model: Message,
-      as: 'messages'
+      as: 'messages',
+      attributes: ['content']
     }]
   });
   const mess = await Message.findAll();
@@ -55,9 +56,10 @@ async function printAll() {
   console.log(JSON.stringify(users, null, 2));
   console.log(JSON.stringify(convs, null, 2));
   console.log(JSON.stringify(mess, null, 2));
-  const tmp = JSON.parse(JSON.stringify(users, null, 2));
+  const tmp = JSON.parse(JSON.stringify(convs, null, 2));
+  console.log('djdfjfjfjf', tmp);
   for(let t = 0; t < tmp.length; t++)
-    console.log('dfjdfjsfj ', tmp[t].peer_id_2);
+    console.log('dfjdfjsfj ', tmp[t]['messages'][0].content);
 }
 
 async function doSomething() {
@@ -102,6 +104,7 @@ http.listen(port, async () => {
     include: [{
       model: Conversation,
       as: 'peer_id_2'
+      // attributes: ['user_id_2']
     }]
   });
   await doSomething();

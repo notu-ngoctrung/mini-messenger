@@ -74,14 +74,31 @@ route.post('/api/conversation', async (req, res) => {
       res.status(404).send(`Cannot get conversations: ${req.body.peerName} not found`);
       return;
     }
-    Conversation.create({
-      user_id_1: user1.id,
-      user_id_2: user2.id
-    }).then(() => {
-      res.status(200).end();
-    }).catch(() => {
-      res.status(400).send(`An error happened in creating a conversation between ${user1.username} and ${user2.username}`);
+    const conversation = await Conversation.findOne({
+      where: { 
+        [Sequelize.Op.or]: [
+          {
+            user_id_1: user1.id,
+            user_id_2: user2.id
+          },
+          {
+            user_id_1: user2.id,
+            user_id_2: user1.id
+          }
+        ]
+      }
     });
+    if (conversation === null) {
+      Conversation.create({
+        user_id_1: user1.id,
+        user_id_2: user2.id
+      }).then(() => {
+        res.status(200).end();
+      }).catch(() => {
+        res.status(400).send(`An error happened in creating a conversation between ${user1.username} and ${user2.username}`);
+      });
+    }
+    res.status(200).end();
   } else
     res.status(400).send('Empty header');
 });
@@ -98,16 +115,30 @@ route.get('/api/conversation', async (req, res) => {
       res.status(404).send(`Cannot get conversations: ${decoded.userID} not found`);
     else {
       const conversations = await Conversation.findAll({
+        attributes: ['createdAt'],
         where: {
           [Sequelize.Op.or]: [
             { user_id_1: decoded.userID },
             { user_id_2: decoded.userID }
           ]
         },
-        include: {
-          model: Message,
-          as: 'messages'
-        }
+        include: [
+          {
+            model: Message,
+            as: 'messages',
+            attributes: ['content']
+          },
+          {
+            model: User,
+            as: 'convUser_1',
+            attributes: ['username']
+          },
+          {
+            model: User,
+            as: 'convUser_2',
+            attributes: ['username']
+          }
+        ]
       });
       res.json(JSON.stringify(conversations));
     }
@@ -158,13 +189,27 @@ route.post('/api/conversation/message', async (req, res) => {
     const decoded = jwt.verify(token, config.keys.secret);
     console.log(`${decoded.userID} wants to send a message`);
     const receiver = await User.findOne({
-      where: { username: req.body.username_2 }
+      where: { username: req.body.receiver }
+    })
+    const conversation = await Conversation.findOne({
+      where: { 
+        [Sequelize.Op.or]: [
+          {
+            user_id_1: decoded.userID,
+            user_id_2: receiver.id
+          },
+          {
+            user_id_1: receiver.id,
+            user_id_2: decoded.userID
+          }
+        ]
+      }
     });
     Message.create({
-      conversation_id: req.body.conversation_id,
+      conversation_id: conversation.id,
       content: req.body.content
     }).then(() => {
-      // code to send back to receiver
+      res.status(200).end();
     }).catch(() => {
       res.status(400).send('An error happened when creating a new message');
     });

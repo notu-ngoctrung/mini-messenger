@@ -78,11 +78,13 @@ User.hasMany(Conversation, {
 });
 
 Conversation.belongsTo(User, {
+  as: 'convUser_1',
   foreignKey: 'user_id_1',
   targetKey: 'id'
 });
 
 Conversation.belongsTo(User, {
+  as: 'convUser_2',
   foreignKey: 'user_id_2',
   targetKey: 'id'
 });

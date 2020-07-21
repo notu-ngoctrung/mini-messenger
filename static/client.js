@@ -43,18 +43,19 @@ askUser()
 
     messageForm.addEventListener('submit', (event) => {
       event.preventDefault();
-      processMessage(currentPeerName, currentPeerName, `${username}: ${messageInput.value}`);
-      postMessage(currentPeerName, messageInput.value, token);
-      socket.emit('message', username, currentPeerName, messageInput.value);
+      const message = `${username}: ${messageInput.value}`;
+      processMessage(currentPeerName, currentPeerName, message);
+      postMessage(currentPeerName, message, token);
+      socket.emit('message', username, currentPeerName, message);
       messageInput.value = '';
       return false;
     }, false);
 
-    addMessage(`Me: You have joined the chat as ${username} ${token}.`);
+    // addMessage(`Me: You have joined the chat as ${username} ${token}.`);
 
     socket.emit('join', username);
     
-    socket.on('message-new', (sender, data) => processMessage(currentPeerName, sender, `${sender}: ${data}`));
+    socket.on('message-new', (sender, data) => processMessage(currentPeerName, sender, data));
     socket.on('conversation-new', async (sender) => {
       let isSuccessful = await addNewConversation(username, sender, token);
       if (!isSuccessful)
@@ -149,9 +150,9 @@ async function getInitialDataFromServer(username, token) {
       console.log(resObj);
       for(let i = 0; i < resObj.length; i++) {
         const messages = [];
-        const peerName = (resObj[i].user_id_1 === username ? resObj[i].user_id_2 : resObj[i].user_id_1);
-        for(let j = 0; j < resObj['messages'].length; j++)
-          messages.push(resObj['messages'][j].content);
+        const peerName = (resObj[i].convUser_1.username === username ? resObj[i].convUser_2.username : resObj[i].convUser_1.username);
+        for(let j = 0; j < resObj[i]['messages'].length; j++)
+          messages.push(resObj[i]['messages'][j].content);
         conversations.push({
           peerName: peerName,
           messages: messages
@@ -202,7 +203,7 @@ async function checkUsername(username) {
   }).then((res) => {
     if (res.status === 404)
       isTaken = false;
-    console.log(res.status, 'djfjdsjsd');
+    // console.log(res.status, 'djfjdsjsd');
   }).catch(() => {
     console.log('sdkdkd');
   });
