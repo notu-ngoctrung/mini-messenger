@@ -6,7 +6,9 @@ const userList = document.querySelector('#user-list');
 const currentConversation = document.querySelector('.messages'); 
 
 let currentPeerName = '';
+
 /**
+ * Stores all conversations of a user locally
  * {
  *   peerName: string
  *   messages: [...content]
@@ -56,22 +58,27 @@ askUser()
     });
   });
 
-  async function askUser() {
-    let username, password;
-    while (true) {
-      username = prompt('Enter your username: ', '');
-      if (await checkUsername(username)) {
-        password = prompt('Enter your password: ', '');
-      } else {
-        password = prompt('User is not registered. Enter your password to register: ', '');
-        if (!(await register(username, password)))
-          continue;
-      }
-      const { isSuccessful, token } = await login(username, password);
-      if (isSuccessful) {
-        alert('Login successfully');
-        return { username, token };
-      } else
-        alert('Login failed. Please try again!');
+/**
+ * Asks for user's information: username/ password
+ * Registers the user if not registered. Otherwise, attempts to login the user
+ * @returns {Object} Includes: username and a unique token to make requests with the server
+ */
+async function askUser() {
+  let username, password;
+  while (true) {
+    username = prompt('Enter your username: ', '');
+    if (await checkUsername(username)) {
+      password = prompt('Enter your password: ', '');
+    } else {
+      password = prompt('User is not registered. Enter your password to register: ', '');
+      if (!(await register(username, password)))
+        continue;
     }
+    const { isSuccessful, token } = await login(username, password);
+    if (isSuccessful) {
+      alert('Login successfully');
+      return { username, token };
+    } else
+      alert('Login failed. Please try again!');
   }
+}

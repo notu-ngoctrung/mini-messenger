@@ -1,10 +1,7 @@
-function searchForConversation(peerName) {
-  for(let i = 0; i < conversations.length; i++)
-    if (conversations[i].peerName === peerName)
-      return true;
-  return false;
-}
-
+/**
+ * Creates a HTML element to display a message
+ * @param {string} message A message to be displayed
+ */
 function addMessage(message) {
   const li = document.createElement('li');
   li.innerHTML = message;
@@ -12,7 +9,22 @@ function addMessage(message) {
   window.scrollTo(0, document.body.scrollHeight);
 }
 
-// Do something more efficiently????
+/**
+ * Checks if we have the conversation with a given user or not
+ * @param {string} peerName A username of another different user to be looked for
+ * @returns {boolean} true if we've already had the conversation; false, otherwise
+ */
+function searchForConversation(peerName) {
+  for(let i = 0; i < conversations.length; i++)
+    if (conversations[i].peerName === peerName)
+      return true;
+  return false;
+}
+
+/**
+ * Changes the message lists on HTML so that we can chat with a given user from now on
+ * @param {string} peerName A username of another different user
+ */
 function resetMessageList(peerName) {
   currentPeerName = peerName;
   currentConversation.innerHTML = '';
@@ -24,11 +36,32 @@ function resetMessageList(peerName) {
       break;
     }
   }
+  // Unfreeze the message textbox when we have some conversation to chat
   if (conversations.length > 0)
     for(let i = 0; i < messageForm.elements.length; i++) 
       messageForm.elements[i].readOnly = false;
 }
 
+/**
+ * Adds a new conversation in HTML code (locally)
+ * @param {string} peerName A username of another different user
+ */
+function addNewConversationHTML(peerName) {
+  const li = document.createElement('li');
+  const conversationButton = document.createElement('button');
+  conversationButton.className = 'btn btn-dark w-100';
+  conversationButton.innerHTML = peerName;
+  conversationButton.peerName = peerName;
+  conversationButton.addEventListener('click', (event) => resetMessageList(event.target.peerName));
+  li.appendChild(conversationButton);
+  userList.appendChild(li);
+}
+
+/**
+ * Adds a new conversation between us and the peerName user
+ * @param {string} peerName A username of another different user
+ * @param {string} token A unique token to contact with the server
+ */
 async function addNewConversation(peerName, token) {
   let isSuccessful = true;
   await fetch('/api/conversation', {
@@ -59,17 +92,11 @@ async function addNewConversation(peerName, token) {
   return true;
 }
 
-function addNewConversationHTML(peerName) {
-  const li = document.createElement('li');
-  const conversationButton = document.createElement('button');
-  conversationButton.className = 'conversation-button';
-  conversationButton.innerHTML = peerName;
-  conversationButton.peerName = peerName;
-  conversationButton.addEventListener('click', (event) => resetMessageList(event.target.peerName));
-  li.appendChild(conversationButton);
-  userList.appendChild(li);
-}
-
+/**
+ * Retrieves all of our conversations from the server to display locally
+ * @param {string} username Our username
+ * @param {string} token A unique token to contact with the server
+ */
 async function getInitialDataFromServer(username, token) {
   fetch('/api/conversation', {
     method: 'GET',
@@ -89,7 +116,6 @@ async function getInitialDataFromServer(username, token) {
           peerName: peerName,
           messages: messages
         });
-        // Add HTML element
         addNewConversationHTML(peerName);
       }
       if (conversations.length > 0)
@@ -98,8 +124,13 @@ async function getInitialDataFromServer(username, token) {
     });
 }
 
+/**
+ * Processes an incoming message, given the message itself and the involved user
+ * @param {string} currentPeerName Username of the current user we're chatting with
+ * @param {string} peerName Username of the user involving in the given message
+ * @param {string} message The message to be processed
+ */
 function processMessage(currentPeerName, peerName, message) {
-  // use foreach
   for(let i = 0; i < conversations.length; i++) {
     const conversation = conversations[i];
     if (conversation.peerName === peerName) {
@@ -111,6 +142,12 @@ function processMessage(currentPeerName, peerName, message) {
     addMessage(message);
 }
 
+/**
+ * Sends a message to the server
+ * @param {string} receiver Receiver's username
+ * @param {string} message The given message
+ * @param {string} token A unique token to contact with the server
+ */
 async function postMessage(receiver, message, token) {
   fetch('/api/conversation/message', {
     method: 'POST',
@@ -125,6 +162,11 @@ async function postMessage(receiver, message, token) {
   });
 }
 
+/**
+ * Checks if the username is taken or not
+ * @param {string} username A username to be checked
+ * @returns {boolean} true if taken; otherwise, false
+ */
 async function checkUsername(username) {
   let isTaken = true;
   await fetch(`/api/user/${username}`, {
@@ -135,13 +177,18 @@ async function checkUsername(username) {
   }).then((res) => {
     if (res.status === 404)
       isTaken = false;
-    // console.log(res.status, 'djfjdsjsd');
   }).catch(() => {
     console.log('sdkdkd');
   });
   return isTaken;
 }
 
+/**
+ * Makes an attempt to login a user
+ * @param {string} username
+ * @param {string} password 
+ * @returns {Object} Includes: isSuccessful (true if login successfully) and a unique token to contact with the server
+ */
 async function login(username, password) {
   let isSuccessful = true;
   let token = '';
@@ -165,6 +212,12 @@ async function login(username, password) {
   return { isSuccessful, token };
 }
 
+/**
+ * Makes an attempt to register a user
+ * @param {string} username 
+ * @param {string} password 
+ * @returns {boolean} true if register successfully; otherwise, false
+ */
 async function register(username, password) {
   console.log('password: ', password);
   let isSuccessful = true;
@@ -186,6 +239,10 @@ async function register(username, password) {
   return isSuccessful;
 }
 
+/**
+ * Freezes the message form in HTML code so that the user is not allowed to chat
+ * @param {Element} messageForm 
+ */
 function disableTextMode(messageForm) {
   for(let i = 0; i < messageForm.elements.length; i++) 
     messageForm.elements[i].readOnly = true;

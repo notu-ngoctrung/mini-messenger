@@ -1,5 +1,5 @@
 import express from 'express';
-import route from './api';
+import router from './api';
 import bodyParser from 'body-parser';
 import {db, User, Conversation, Message} from './database';
 
@@ -13,7 +13,7 @@ const socketMap = new Map();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/static', express.static(__dirname + '/static'));
-app.use(route);
+app.use(router);
 
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html');
@@ -53,7 +53,7 @@ http.listen(port, async () => {
   .catch((err) => {
     console.log("failed to connect to database", err);
   });
-  await db.sync({force: true});
+  await db.sync();
   await User.sync();
   await Conversation.sync();
   await Message.sync();
