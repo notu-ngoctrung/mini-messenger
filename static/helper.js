@@ -106,7 +106,7 @@ async function getInitialDataFromServer(username, token) {
   }).then((res) => res.json())
     .then((res) => {
       let resObj = JSON.parse(res);
-      console.log(resObj);
+      // console.log(resObj);
       for(let i = 0; i < resObj.length; i++) {
         const messages = [];
         const peerName = (resObj[i].convUser_1.username === username ? resObj[i].convUser_2.username : resObj[i].convUser_1.username);
@@ -177,8 +177,8 @@ async function checkUsername(username) {
   }).then((res) => {
     if (res.status === 404)
       isTaken = false;
-  }).catch(() => {
-    console.log('sdkdkd');
+  }).catch((err) => {
+    console.log('checkUsername: ', err);
   });
   return isTaken;
 }
@@ -203,7 +203,7 @@ async function login(username, password) {
     })
   }).then((res) => res.json())
     .then((res) => {
-    console.log(res.status);
+    // console.log(res.status);
     if (res.status === 404 || res.status === 409) 
       isSuccessful = false;
     else 
