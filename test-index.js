@@ -73,10 +73,10 @@ http.listen(port, async () => {
       console.log("failed to connect to database", err);
     });
   await db.sync({force: true});
-  await User.sync();
-  await Conversation.sync();
-  await Message.sync();
-  await createDatabase();
+  await User.sync({force: true});
+  await Conversation.sync({force: true});
+  await Message.sync({force: true});
+  // await createDatabase();
   await printAll();
   await User.findAll({
     where: {

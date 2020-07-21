@@ -1,41 +1,53 @@
 // import io from 'socket.io-client';
 
 const form = document.querySelector('form');
-const input = document.querySelector('.input'); // Get the first element named 'input'
-const messages = document.querySelector('.messages'); 
-let username, password;
+const messageInput = document.querySelector('.messageInput'); 
+const userInput = document.querySelector('.userInput'); 
+const currentConversation = document.querySelector('.messages'); 
 
-function checkUsername(username) {
-  
+const conversations = [];
+
+let currentPeerName = '';
+
+askUser()
+  .then(({username, token}) => {
+    const socket = io();
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      processMessage(currentPeerName, currentPeerName, username, input.value);
+      socket.emit('message', username, currentPeerName, input.value);
+    
+      input.value = '';
+      return false;
+    }, false);
+
+    // addMessage(`Me: You have joined the chat as ${username}.`);
+
+    socket.emit('join', username);
+
+    // socket.on('user-new', (username) => {
+    //   addMessage(`${username} has joined the chat.`);
+    // });
+    
+    // socket.on('user-left', (username) => {
+    //   addMessage(`${username} has left the chat.`);
+    // });
+    
+    socket.on('message-new', (sender, data) => processMessage(currentPeerName, sender, sender, data));
+  });
+
+/** Helpers function (later moved) */
+
+function processMessage(currentPeerName, peerName, sender, data) {
+  conversations.forEach(conversation => {
+    if (conversation.username === sender) {
+      conversation.messages.append({
+
+      })
+    }
+  });
 }
-
-function login(username, password) {
-
-}
-
-while (true) {
-  username = prompt('Please enter a username: ', '');
-  if (checkUsername(username)) {
-    password = prompt('Enter your password: ', '');
-    if (login(username, password))
-      break;
-  } else 
-    alert('Your username is not found in our database. Try another');
-}
-
-const socket = io();
-
-form.addEventListener('submit', (event) => {
-  event.preventDefault();
-
-  addMessage(`${username}: ${input.value}`);
-  socket.emit('message', username, input.value);
-
-  input.value = '';
-  return false;
-}, false);
-
-addMessage(`Me: You have joined the chat as ${username}.`);
 
 function addMessage(message) {
   const li = document.createElement('li');
@@ -44,17 +56,84 @@ function addMessage(message) {
   window.scrollTo(0, document.body.scrollHeight);
 }
 
-socket.emit('join', username);
+async function checkUsername(username) {
+  let isTaken = true;
+  await fetch(`/api/user/${username}`, {
+    method: 'GET',
+    headers: {
+      'Content-type': 'application/json; charset=UTF-8'
+    }
+  }).then((res) => {
+    if (res.status === 404)
+      isTaken = false;
+    console.log(res.status, 'djfjdsjsd');
+  }).catch(() => {
+    console.log('sdkdkd');
+  });
+  return isTaken;
+}
 
-socket.on('user-new', (username) => {
-  addMessage(`${username} has joined the chat.`);
-});
+async function login(username, password) {
+  let isSuccessful = true;
+  let token = '';
+  await fetch('/api/login', {
+    method: 'POST',
+    body: JSON.stringify({
+      username: username,
+      password: password
+    }),
+    headers: {
+      'Content-type': 'application/json; charset=UTF-8'
+    }
+  }).then((res) => {
+    console.log(res.status);
+    if (res.status === 404 || res.status === 409) 
+      isSuccessful = false;
+    else {
+      token = res.body.jwtToken;
+      console.log(res.body);
+    }
+  });
+  return { isSuccessful, token };
+}
 
-socket.on('user-left', (username) => {
-  addMessage(`${username} has left the chat.`);
-});
+async function register(username, password) {
+  console.log('password: ', password);
+  let isSuccessful = true;
+  await fetch('/api/register', {
+    method: 'POST',
+    body: JSON.stringify({
+      username: username,
+      password: password
+    }),
+    headers: {
+      'Content-type': 'application/json; charset=UTF-8'
+    }
+  }).then((res) => {
+    if (res.status === 409) {
+      isSuccessful = false;
+      console.log(res.body);
+    }
+  });
+  return isSuccessful;
+}
 
-socket.on('message-new', (username, data) => {
-  addMessage(`${username}: ${data}`);
-});
-
+async function askUser() {
+  let username, password;
+  while (true) {
+    username = prompt('Enter your username: ', '');
+    if (await checkUsername(username)) {
+      password = prompt('Enter your password: ', '');
+    } else {
+      password = prompt('User is not registered. Enter your password to register: ', '');
+      if (!(await register(username, password)))
+        continue;
+    }
+    const { isSuccessful, token } = await login(username, password);
+    if (isSuccessful) {
+      alert('Login successfully');
+      return { username, token };
+    } else
+      alert('Login failed. Please try again!');
+  }
+}

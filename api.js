@@ -1,6 +1,7 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
 import Sequelize from 'sequelize';
+import config from './config';
 import {User, Conversation, Message} from './database';
 
 const jwt = require('jsonwebtoken');
@@ -8,38 +9,48 @@ const route = express.Router();
 
 route.post('/api/register', async (req, res) => {
   const hash = bcrypt.hashSync(req.body.password, 10);
+  console.log(req.body, hash);
   const user = await User.create({
     username: req.body.username,
     password: hash
   }).then(() => {
     res.status(200).end();
-  }).catch(() => {
-    res.status(409).send('Username is taken');
+  }).catch((err) => {
+    res.status(409).send(err);
+    // res.status(409).send('Username is taken');
   });
 });
 
-route.get('/api/login', async (req, res) => {
-  const hash = bcrypt.hashSync(req.body.password, 10);
+route.post('/api/login', async (req, res) => {
+  // console.log(req.body);
+  // console.log(req);
+  // return;
+  // const hash = bcrypt.hashSync(req.body.password, 10);
+  // console.log(req.body, hash);
   const user = await User.findOne({
     where: { username: req.body.username }
-  })
-  if (user === null) 
+  });
+  if (user === null)
     res.status(404).send('User not found');
-  else if (user.password !== hash)
-    res.status(409).send('Password mismatched');
-  else {
-    const token = jwt.sign({
-      userID: user.id
-    },
-    config.keys.secret, {
-      expiresIn: '300m'
+  else 
+    bcrypt.compare(req.body.password, user.password, (err, result) => {
+      if (!result)
+        res.status(409).send('Password mismatched');
+      else {
+        console.log('matched');
+        const token = jwt.sign({
+          userID: user.id
+        },
+        config.keys.secret, {
+          expiresIn: '300m'
+        });
+    
+        res.status(200).json({
+          success: true,
+          jwtToken: token
+        });
+      }
     });
-
-    res.json({
-      success: true,
-      jwtToken: token
-    });
-  }
 });
 
 route.post('/api/conversation', async (req, res) => {
@@ -161,14 +172,15 @@ route.post('/api/conversation/message', async (req, res) => {
     res.status(400).send('Empty header');
 });
 
-route.get('/api/user', async (req, res) => {
-  const receiver = await User.findOne({
-    where: { username: req.body.username }
+route.get('/api/user/:username', async (req, res) => {
+  console.log(req.params.username);
+  const user = await User.findOne({
+    where: { username: req.params.username }
   }).catch(() => {
-    res.status(400).send(`An error happened in finding ${req.body.username}`);
+    res.status(400).send(`An error happened in finding ${req.params.username}`);
   });
-  if (receiver === null) 
-    res.status(404).send(`${req.body.username} not found`);
+  if (user === null) 
+    res.status(404).send(`${req.params.username} not found`);
   else
     res.status(200).end();
 });

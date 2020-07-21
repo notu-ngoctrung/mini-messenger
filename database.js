@@ -1,4 +1,5 @@
 import Sequelize from 'sequelize';
+import config from './config';
 
 const db = new Sequelize(config.db.dbName, config.db.username, config.db.password, {
   host: 'localhost',
@@ -14,6 +15,7 @@ const db = new Sequelize(config.db.dbName, config.db.username, config.db.passwor
 const User = db.define('user', {
   id: {
     type: Sequelize.INTEGER,
+    autoIncrement: true,
     primaryKey: true
   },
   username: {
@@ -32,6 +34,7 @@ const User = db.define('user', {
 const Conversation = db.define('conversation', {
   id: {
     type: Sequelize.INTEGER,
+    autoIncrement: true,
     primaryKey: true
   },
   user_id_1: {
@@ -49,6 +52,7 @@ const Conversation = db.define('conversation', {
 const Message = db.define('message', {
   id: {
     type: Sequelize.INTEGER,
+    autoIncrement: true,
     primaryKey: true
   },
   conversation_id: {
@@ -58,6 +62,8 @@ const Message = db.define('message', {
   content: {
     type: Sequelize.TEXT
   }
+}, {
+  freezeTableName: true
 });
 
 // User-Conversation relationship

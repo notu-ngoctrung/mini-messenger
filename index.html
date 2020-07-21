@@ -12,15 +12,23 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
   </head>
   <body>
-    <div class="container col-3">
-      <ul id="user-list"></ul>
-    </div>
-    <div class="container col-8">
-      <ul class="messages"></ul>
-      <form>
-          <input type="text" class="input" autocomplete="off" autofocus />
-          <button>Send</button>
-      </form>
+    <div class="container d-flex">
+      <div class="col-4">
+        <form id="user-form"> 
+          <input type="text" id="peer-input" autocomplete="off" autofocus />
+          <button>Enter</button>
+        </form>
+        <ul id="user-list"></ul>
+        <!-- djfdf> -->
+      </div>
+      <div class="col-8">
+        <form id="messageForm">
+            <input type="text" id="messageInput" autocomplete="off" autofocus />
+            <button>Send</button>
+        </form>
+        <ul class="messages"></ul>
+        <!-- jwjer -->
+      </div>
     </div>
   </body>
 </html>
