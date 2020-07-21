@@ -7,7 +7,9 @@ config.keys = {
 config.db = {
   username: 'postgres',
   password: 'abc123',
-  dbName: 'minimessenger'
+  dbName: 'minimessenger',
+  host: 'localhost',
+  dialect: 'postgres'
 }
 
 export default config;

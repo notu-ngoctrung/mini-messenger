@@ -1,6 +1,5 @@
 import express from 'express';
 import route from './api';
-import config from './config';
 import bodyParser from 'body-parser';
 import {db, User, Conversation, Message} from './database';
 

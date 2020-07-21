@@ -2,8 +2,8 @@ import Sequelize from 'sequelize';
 import config from './config';
 
 const db = new Sequelize(config.db.dbName, config.db.username, config.db.password, {
-  host: 'localhost',
-  dialect: 'postgres',
+  host: config.db.host,
+  dialect: config.db.dialect,
   pool: {
     max: 5,
     min: 0,
@@ -38,11 +38,11 @@ const Conversation = db.define('conversation', {
     primaryKey: true
   },
   user_id_1: {
-    type: Sequelize.INTEGER, // changed to string?
+    type: Sequelize.INTEGER,
     allowNull: false
   },
   user_id_2: {
-    type: Sequelize.INTEGER, // changed to string?
+    type: Sequelize.INTEGER, 
     allowNull: false
   }
 }, {
