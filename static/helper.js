@@ -11,6 +11,7 @@ function addMessage(message) {
 
 /**
  * Checks if we have the conversation with a given user or not
+ * Note: Should be improved for performance
  * @param {string} peerName A username of another different user to be looked for
  * @returns {boolean} true if we've already had the conversation; false, otherwise
  */
@@ -23,6 +24,7 @@ function searchForConversation(peerName) {
 
 /**
  * Changes the message lists on HTML so that we can chat with a given user from now on
+ * Note: Should be improved for performance
  * @param {string} peerName A username of another different user
  */
 function resetMessageList(peerName) {
@@ -163,7 +165,7 @@ async function postMessage(receiver, message, token) {
 }
 
 /**
- * Checks if the username is taken or not
+ * Checks if the username is taken on the server or not
  * @param {string} username A username to be checked
  * @returns {boolean} true if taken; otherwise, false
  */
@@ -241,6 +243,7 @@ async function register(username, password) {
 
 /**
  * Freezes the message form in HTML code so that the user is not allowed to chat
+ * Note: Should be improved in implementation
  * @param {Element} messageForm 
  */
 function disableTextMode(messageForm) {
