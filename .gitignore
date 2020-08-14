@@ -1,4 +1,8 @@
 ## Folders
 node_modules/
 .vscode/
-.archive/
+archive/
+
+## Files
+feedback.txt
+.env

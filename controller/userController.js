@@ -1,61 +1,66 @@
 import bcrypt from 'bcrypt';
-import Sequelize from 'sequelize';
-import config from '../config';
-import { User } from '../database';
+import UserService from '../services/user.service';
 
-const jwt = require('jsonwebtoken');
-const UserController = {};
-
-UserController.registerUser = async (req, res) => {
-  const hash = bcrypt.hashSync(req.body.password, 10);
-  console.log(req.body, hash);
-  const user = await User.create({
-    username: req.body.username,
-    password: hash
-  }).then(() => {
-    res.status(200).end();
-  }).catch((err) => {
-    res.status(409).send(err);
-  });
-};
-
-UserController.login = async (req, res) => {
-  const user = await User.findOne({
-    where: { username: req.body.username }
-  });
-  if (user === null)
-    res.status(404).send('User not found');
-  else 
-    bcrypt.compare(req.body.password, user.password, (err, result) => {
-      if (!result)
-        res.status(409).send('Password mismatched');
-      else {
-        console.log('matched');
-        const token = jwt.sign({
-          userID: user.id
-        },
-        config.keys.secret, {
-          expiresIn: '300m'
-        });
-    
-        res.status(200).json({
-          jwtToken: token
-        });
+class UserController {
+  static async registerUser(req, res) {
+    bcrypt.hash(req.body.password, 10, async (err, hashPwd) => {
+      if (err) {
+        console.log('Error in userController.registerUser: ', err);    // DELETE LATER
+        res.status(409).send(`An error happens when encrypting the password of ${req.body.username}`);
+        return;
+      }
+      try {
+        let user = await UserService.searchForUsername(req.body.username);
+        if (user)
+          res.status(409).send(`User '${req.body.username}' has already registered`);
+        else {
+          user = await UserService.addUser(req.body.username, hashPwd);
+          res.status(200).json({
+            username: req.body.username,
+            token: UserService.generateJWTToken(user.id)
+          });
+        }
+      }
+      catch (err) {
+        res.status(409).send(err.message);
       }
     });
-};
+  }
 
-UserController.searchForUsername = async (req, res) => {
-  console.log(req.params.username);
-  const user = await User.findOne({
-    where: { username: req.params.username }
-  }).catch(() => {
-    res.status(400).send(`An error happened in finding ${req.params.username}`);
-  });
-  if (user === null) 
-    res.status(404).send(`${req.params.username} not found`);
-  else
-    res.status(200).end();
-};
+  static async login(req, res) {
+    try {
+      const user = await UserService.searchForUsername(req.body.username);
+      if (user) {
+        bcrypt.compare(req.body.password, user.password, (err, result) => {
+          if (err)
+            res.status(409).send('Some error happens');
+          else if (!result)
+            res.status(409).send('Password mismatched');
+          else 
+            res.status(200).json({
+              username: req.body.username,
+              token: UserService.generateJWTToken(user.id)
+            });
+        });
+      }
+    }
+    catch (err) {
+      res.status(409).send(err.message);
+    }
+  }
+
+  static async searchForUsername(req, res) {
+    try {
+      const user = await UserService.searchForUsername(req.params.username);
+      if (user)
+        res.status(200).send(`${user.username} is found`);
+      else
+        res.status(404).send(`Cannot found the user`);
+    }
+    catch (err) {
+      res.status(err.statusCode).send(err.message);
+    }
+  }
+}
 
 export default UserController;
