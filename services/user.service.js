@@ -1,9 +1,7 @@
-import bcrypt from 'bcrypt';
-import Sequelize from 'sequelize';
+import dotenv from 'dotenv';
 import { User } from '../database';
 import ReqError from './error.service';
 
-const dotenv = require('dotenv');
 dotenv.config();
 
 const jwt = require('jsonwebtoken');
@@ -17,6 +15,14 @@ class UserService {
       expiresIn: '300m'
     });
     return jwtToken;
+  }
+
+  static decodeUserID(token) {
+    if (token) {
+      const verfiedUser = jwt.verify(token, process.env.SECRET_KEY);
+      return verfiedUser.userID;
+    } else
+      throw new ReqError(400, 'Authorization token is empty');
   }
 
   static async searchForUsername(username) {

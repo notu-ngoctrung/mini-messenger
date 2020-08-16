@@ -1,5 +1,6 @@
 import bcrypt from 'bcrypt';
 import UserService from '../services/user.service';
+import ReqError from '../services/error.service';
 
 class UserController {
   static async registerUser(req, res) {
@@ -22,7 +23,7 @@ class UserController {
         }
       }
       catch (err) {
-        res.status(409).send(err.message);
+        res.status(err.statusCode || 409).send(ReqError.getErrMessage(err));
       }
     });
   }
@@ -45,7 +46,7 @@ class UserController {
       }
     }
     catch (err) {
-      res.status(409).send(err.message);
+      res.status(err.statusCode || 409).send(ReqError.getErrMessage(err));
     }
   }
 
@@ -58,7 +59,7 @@ class UserController {
         res.status(404).send(`Cannot found the user`);
     }
     catch (err) {
-      res.status(err.statusCode).send(err.message);
+      res.status(err.statusCode || 409).send(ReqError.getErrMessage(err));
     }
   }
 }

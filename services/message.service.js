@@ -1,3 +1,4 @@
+import Sequelize from 'sequelize';
 import { Message } from '../database';
 import ReqError from './error.service';
 

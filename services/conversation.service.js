@@ -1,4 +1,5 @@
-import { Conversation } from "../database";
+import { Conversation, Message, User } from "../database";
+import Sequelize from 'sequelize';
 import ReqError from "./error.service";
 
 class ConversationService {
@@ -8,8 +9,8 @@ class ConversationService {
       attributes: ['createdAt'],
       where: {
         [Sequelize.Op.or]: [
-          { user_id_1: decoded.userID },
-          { user_id_2: decoded.userID }
+          { user_id_1: userID },
+          { user_id_2: userID }
         ]
       },
       include: [
@@ -41,12 +42,12 @@ class ConversationService {
       where: { 
         [Sequelize.Op.or]: [
           {
-            user_id_1: user1.id,
-            user_id_2: user2.id
+            user_id_1: userID1,
+            user_id_2: userID2
           },
           {
-            user_id_1: user2.id,
-            user_id_2: user1.id
+            user_id_1: userID2,
+            user_id_2: userID1
           }
         ]
       }

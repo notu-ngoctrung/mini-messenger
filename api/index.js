@@ -1,6 +1,7 @@
 import express from 'express';
-import UserController from './controller/userController';
-import ConversationController from './controller/conversationController';
+import UserController from '../controllers/userController';
+import ConversationController from '../controllers/conversationController';
+import verifyRequest from '../middleware/authentication';
 
 const router = express.Router();
 
@@ -13,6 +14,7 @@ const router = express.Router();
  * }
  * Response: {
  *    status: 200/409 (with an error message),
+ *    json: {username, token}
  * }
  */
 router.post('/api/register', UserController.registerUser);
@@ -26,7 +28,7 @@ router.post('/api/register', UserController.registerUser);
  * }
  * Response: {
  *    status: 200/404/409 (with an error message),
- *    json: {jwtToken}
+ *    json: {username, token}
  * }
  */
 router.post('/api/login', UserController.login);
@@ -42,7 +44,7 @@ router.post('/api/login', UserController.login);
  *    status: 200/400/404 (with an error message)
  * }
  */
-router.post('/api/conversation', ConversationController.createOneConversation);
+router.post('/api/conversation', verifyRequest, ConversationController.createOneConversation);
 
 /**
  * Get all conversations in which a given user is involved
@@ -59,7 +61,7 @@ router.post('/api/conversation', ConversationController.createOneConversation);
  *    }...
  * ]}
  */
-router.get('/api/conversation', ConversationController.getAllConversations);
+router.get('/api/conversation', verifyRequest, ConversationController.getAllConversations);
 
 /**
  * Delete a conversation of two users
@@ -72,7 +74,7 @@ router.get('/api/conversation', ConversationController.getAllConversations);
  *    status: 200/400 (with an error message)
  * }
  */
-router.put('/api/conversation/delete', ConversationController.deleteOneConversation);
+router.put('/api/conversation/delete', verifyRequest, ConversationController.deleteOneConversation);
 
 /**
  * Sends a message from a user to another
@@ -85,7 +87,7 @@ router.put('/api/conversation/delete', ConversationController.deleteOneConversat
  *    status: 200/400 (with an error message)
  * }
  */
-router.post('/api/conversation/message', ConversationController.sendOneMessage);
+router.post('/api/conversation/message', verifyRequest, ConversationController.sendOneMessage);
 
 /**
  * Searchs for a user based on its username
