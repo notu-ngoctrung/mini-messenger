@@ -7,8 +7,9 @@ dotenv.config();
 const jwt = require('jsonwebtoken');
 
 class UserService {
-  static generateJWTToken(userID) {
+  static generateJWTToken(username, userID) {
     const jwtToken = jwt.sign({
+      username: username,
       userID: userID
     },
     process.env.SECRET_KEY, {   
@@ -17,15 +18,7 @@ class UserService {
     return jwtToken;
   }
 
-  static decodeUserID(token) {
-    if (token) {
-      const verfiedUser = jwt.verify(token, process.env.SECRET_KEY);
-      return verfiedUser.userID;
-    } else
-      throw new ReqError(400, 'Authorization token is empty');
-  }
-
-  static async searchForUsername(username) {
+  static async getUserByName(username) {
     try {
       const result = await db.transaction(async (t) => {
         const user = await User.findOne({
@@ -37,6 +30,24 @@ class UserService {
       if (result === null)
         throw new ReqError(404, `User ${username} is not found`);
       return result;
+    }
+    catch (err) {
+      console.log('getUserByName error: ', err.message);
+      if (err instanceof ReqError)
+        throw err;
+      throw new ReqError(400, `An error happens when searching for ${username}`);
+    }
+  }
+
+  static async searchForUsername(username) {
+    try {
+      const result = await db.transaction(async (t) => {
+        const user = await User.findOne({
+          where: { username: username }
+        }, { transaction: t });
+        return user;
+      });
+      return (result !== null);
     }
     catch (err) {
       console.log('searchForUsername error: ', err.message);

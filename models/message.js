@@ -1,5 +1,5 @@
 module.exports = (sequelize, DataTypes) => {
-  const Message = sequelize.define('message', {
+  const Message = sequelize.define('Message', {
     id: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
@@ -17,7 +17,7 @@ module.exports = (sequelize, DataTypes) => {
   });
 
   Message.associate = (models) => {
-    Message.belongsTo(Conversation, {
+    Message.belongsTo(models.Conversation, {
       foreignKey: 'conversation_id',
       targetKey: 'id'
     });    

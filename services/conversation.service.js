@@ -1,5 +1,4 @@
-import { db, Conversation, Message, User } from "../models";
-import Sequelize from 'sequelize';
+import { db, Sequelize, Conversation, Message, User } from "../models";
 import ReqError from "./error.service";
 
 class ConversationService {

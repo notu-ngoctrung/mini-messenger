@@ -14,7 +14,7 @@ const router = express.Router();
  * }
  * Response: {
  *    status: 200/409 (with an error message),
- *    json: {username, token}
+ *    json: {token}
  * }
  */
 router.post('/api/register', UserController.registerUser);
@@ -28,7 +28,7 @@ router.post('/api/register', UserController.registerUser);
  * }
  * Response: {
  *    status: 200/404/409 (with an error message),
- *    json: {username, token}
+ *    json: {token}
  * }
  */
 router.post('/api/login', UserController.login);

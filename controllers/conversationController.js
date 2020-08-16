@@ -6,15 +6,13 @@ import ReqError from '../services/error.service';
 class ConversationController {
   static async createOneConversation(req, res) {
     try {
-      const userID = UserService.decodeUserID(req.headers.authorization);
-      console.log(`${userID} creates a conversation`);
-      const user1 = await UserService.searchForID(userID);
-      const user2 = await UserService.searchForUsername(req.body.peerName);
-      let conversation = await ConversationService.searchAConversation(user1.id, user2.id);
+      console.log(`${req.username} creates a conversation`);
+      const peer = await UserService.getUserByName(req.body.peerName);
+      let conversation = await ConversationService.searchAConversation(req.userID, peer.id);
       if (conversation) 
         res.status(200).send('Conversation has already created');
       else {
-        conversation = await ConversationService.createNewConversation(user1.id, user2.id);
+        conversation = await ConversationService.createNewConversation(req.userID, peer.id);
         res.status(200).send('Conversation has successfully created');
       }
     }
@@ -25,10 +23,8 @@ class ConversationController {
 
   static async getAllConversations(req, res) {
     try {
-      const userID = UserService.decodeUserID(req.headers.authorization);
-      console.log(`${userID} requires all conversations`);
-      const user = await UserService.searchForID(userID);
-      const conversations = await ConversationService.searchAllConversations(user.id);
+      console.log(`${req.username} requires all conversations`);
+      const conversations = await ConversationService.searchAllConversations(req.userID);
       res.json(JSON.stringify(conversations));
     }
     catch (err) {
@@ -38,10 +34,9 @@ class ConversationController {
 
   static async deleteOneConversation(req, res) {
     try {
-      const userID = UserService.decodeUserID(req.headers.authorization);
-      console.log(`${userID} deletes a conversation`);
-      const user2 = await UserService.searchForUsername(req.body.peerName);
-      const conversation = await ConversationService.searchAConversation(userID, user2.id);
+      console.log(`${req.username} deletes a conversation`);
+      const peer = await UserService.getUserByName(req.body.peerName);
+      const conversation = await ConversationService.searchAConversation(req.userID, peer.id);
       conversation.destroy()
         .catch(() => {
           res.status(400).send('Cannot destroy the conversation');
@@ -55,10 +50,9 @@ class ConversationController {
 
   static async sendOneMessage(req, res) {
     try {
-      const userID = UserService.decodeUserID(req.headers.authorization);
-      console.log(`${userID} wants to send a message`);
-      const receiver = await UserService.searchForUsername(req.body.receiver);
-      const conversation = await ConversationService.searchAConversation(userID, receiver.id);
+      console.log(`${req.username} wants to send a message`);
+      const receiver = await UserService.getUserByName(req.body.receiver);
+      const conversation = await ConversationService.searchAConversation(req.userID, receiver.id);
       if (conversation == null)
         res.status(400).send('Cannot find the conversation to post message');
       else {
