@@ -1,7 +1,7 @@
 import express from 'express';
 import router from './api';
 import bodyParser from 'body-parser';
-import {db, User, Conversation, Message} from './database';
+import { db } from './models';
 
 const app = express();
 const http = require('http').Server(app);
@@ -47,14 +47,11 @@ io.on('connection', (socket) => {
 http.listen(port, async () => {
   console.log(`Listening on the port ${port}`);
   db.authenticate()
-  .then(() => {
-    console.log("database connected");
-  })
-  .catch((err) => {
-    console.log("failed to connect to database", err);
-  });
+    .then(() => {
+      console.log("database connected");
+    })
+    .catch((err) => {
+      console.log("failed to connect to database", err);
+    });
   await db.sync();
-  await User.sync();
-  await Conversation.sync();
-  await Message.sync();
 });
