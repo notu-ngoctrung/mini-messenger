@@ -1,7 +1,9 @@
+/* eslint-disable new-cap */
+/* eslint-disable max-len */
 import express from 'express';
 import router from './api';
 import bodyParser from 'body-parser';
-import { sequelize } from './models';
+import {sequelize} from './models';
 
 const app = express();
 const http = require('http').Server(app);
@@ -11,7 +13,7 @@ const port = process.env.PORT || 3000;
 const socketMap = new Map();
 
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({extended: true}));
 app.use('/static', express.static(__dirname + '/static'));
 app.use(router);
 
@@ -28,8 +30,7 @@ io.on('connection', (socket) => {
     console.log(`${sender} sent a message to ${receiver}`);
     try {
       socket.to(socketMap.get(receiver)).emit('message-new', sender, data);
-    } 
-    catch (err) {
+    } catch (err) {
       console.log(`An error happened when ${sender} sent a message to ${receiver}`);
     }
   });
@@ -37,8 +38,7 @@ io.on('connection', (socket) => {
     console.log(`Inform ${receiver} of a new conversation with ${sender}`);
     try {
       socket.to(socketMap.get(receiver)).emit('conversation-new', sender);
-    }
-    catch (err) {
+    } catch (err) {
       console.log(`An error happened when ${sender} informed ${receiver} of a new conversation`);
     }
   });
@@ -47,11 +47,11 @@ io.on('connection', (socket) => {
 http.listen(port, async () => {
   console.log(`Listening on the port ${port}`);
   sequelize.authenticate()
-    .then(() => {
-      console.log("database connected");
-    })
-    .catch((err) => {
-      console.log("failed to connect to database", err);
-    });
+      .then(() => {
+        console.log('database connected');
+      })
+      .catch((err) => {
+        console.log('failed to connect to database', err);
+      });
   await sequelize.sync();
 });

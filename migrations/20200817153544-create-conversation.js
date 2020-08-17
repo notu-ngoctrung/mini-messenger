@@ -6,27 +6,27 @@ module.exports = {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       user_id_1: {
         type: Sequelize.INTEGER,
-        allowNull: false
+        allowNull: false,
       },
       user_id_2: {
         type: Sequelize.INTEGER,
-        allowNull: false
+        allowNull: false,
       },
       createdAt: {
         allowNull: false,
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
       },
       updatedAt: {
         allowNull: false,
-        type: Sequelize.DATE
-      }
+        type: Sequelize.DATE,
+      },
     });
   },
   down: async (queryInterface, Sequelize) => {
     await queryInterface.dropTable('Conversations');
-  }
+  },
 };

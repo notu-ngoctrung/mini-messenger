@@ -1,3 +1,5 @@
+/* eslint-disable new-cap */
+/* eslint-disable max-len */
 import express from 'express';
 import UserController from '../controllers/userController';
 import ConversationController from '../controllers/conversationController';

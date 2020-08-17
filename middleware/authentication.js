@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
 import UserService from '../services/user.service';
@@ -12,17 +13,17 @@ const verifyRequest = async (req, res, next) => {
         return;
       }
       try {
-        const user = UserService.searchForID(verifiedUser.userID);
+        UserService.searchForID(verifiedUser.userID);
         req.userID = verifiedUser.userID;
         req.username = verifiedUser.username;
         next();
-      }
-      catch (err) {
+      } catch (err) {
         res.status(400).send(`User ${verifiedUser.username} is no longer in the database`);
       }
     });
-  } else
+  } else {
     res.status(400).send('Empty header');
+  }
 };
 
 export default verifyRequest;
