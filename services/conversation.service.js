@@ -1,10 +1,10 @@
-import { db, Sequelize, Conversation, Message, User } from "../models";
+import { sequelize, Sequelize, Conversation, Message, User } from "../models";
 import ReqError from "./error.service";
 
 class ConversationService {
   static async searchAllConversations(userID) {
     try {
-      const result = await db.transaction(async (t) => {
+      const result = await sequelize.transaction(async (t) => {
         const conversations = await Conversation.findAll({
           attributes: ['createdAt'],
           where: {
@@ -44,7 +44,7 @@ class ConversationService {
   
   static async searchAConversation(userID1, userID2) {
     try {
-      const result = await db.transaction(async (t) => {
+      const result = await sequelize.transaction(async (t) => {
         const conversation = await Conversation.findOne({
           where: { 
             [Sequelize.Op.or]: [
@@ -73,7 +73,7 @@ class ConversationService {
   static async createNewConversation(userID1, userID2) {
     let err;
     try {
-      const result = await db.transaction(async (t) => {
+      const result = await sequelize.transaction(async (t) => {
         const conversation = await Conversation.create({
           user_id_1: userID1,
           user_id_2: userID2

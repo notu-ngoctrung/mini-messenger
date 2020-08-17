@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import { db, User } from '../models';
+import { sequelize, User } from '../models';
 import ReqError from './error.service';
 
 dotenv.config();
@@ -20,7 +20,7 @@ class UserService {
 
   static async getUserByName(username) {
     try {
-      const result = await db.transaction(async (t) => {
+      const result = await sequelize.transaction(async (t) => {
         const user = await User.findOne({
           where: { username: username }
         }, { transaction: t });
@@ -41,7 +41,7 @@ class UserService {
 
   static async searchForUsername(username) {
     try {
-      const result = await db.transaction(async (t) => {
+      const result = await sequelize.transaction(async (t) => {
         const user = await User.findOne({
           where: { username: username }
         }, { transaction: t });
@@ -59,7 +59,7 @@ class UserService {
 
   static async searchForID(userID) {
     try {
-      const result = await db.transaction(async (t) => {
+      const result = await sequelize.transaction(async (t) => {
         const user = await User.findByPk(userID, { transaction: t });
         return user;
       });
@@ -79,7 +79,7 @@ class UserService {
   static async addUser(username, hashPwd) {
     let err;
     try {
-      const result = await db.transaction(async (t) => {
+      const result = await sequelize.transaction(async (t) => {
         const user = await User.create({
           username: username,
           password: hashPwd

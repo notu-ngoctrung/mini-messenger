@@ -1,10 +1,10 @@
-import { db, Message } from '../models';
+import { sequelize, Message } from '../models';
 import ReqError from './error.service';
 
 class MessageService {
   static async createAMessage(conversationID, content) {
     try {
-      const result = await db.transaction(async (t) => {
+      const result = await sequelize.transaction(async (t) => {
         const message = await Message.create({
           conversation_id: conversationID,
           content: content

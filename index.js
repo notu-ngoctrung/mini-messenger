@@ -1,7 +1,7 @@
 import express from 'express';
 import router from './api';
 import bodyParser from 'body-parser';
-import { db } from './models';
+import { sequelize } from './models';
 
 const app = express();
 const http = require('http').Server(app);
@@ -46,12 +46,12 @@ io.on('connection', (socket) => {
 
 http.listen(port, async () => {
   console.log(`Listening on the port ${port}`);
-  db.authenticate()
+  sequelize.authenticate()
     .then(() => {
       console.log("database connected");
     })
     .catch((err) => {
       console.log("failed to connect to database", err);
     });
-  await db.sync();
+  await sequelize.sync();
 });
