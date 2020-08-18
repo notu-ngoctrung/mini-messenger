@@ -54,10 +54,10 @@ class ConversationController {
       console.log(`${req.username} deletes a conversation`);
       const peer = await UserService.getUserByName(req.body.peerName);
       const conversation = await ConversationService.searchAConversation(req.userID, peer.id);
-      conversation.destroy()
-          .catch(() => {
-            res.status(400).send('Cannot destroy the conversation');
-          });
+      if (conversation === null) {
+        throw new ReqError(400, 'Conversation is not in database');
+      }
+      ConversationService.deleteConversation(conversation);
       res.status(200).send('Conversation is deleted');
     } catch (err) {
       res.status(err.statusCode || 409).send(ReqError.getErrMessage(err));

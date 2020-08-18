@@ -102,6 +102,21 @@ class ConversationService {
       throw new ReqError(409, 'An error happens when creating a new conversation');
     }
   }
+
+  /**
+   * Deletes a conversation in the database
+   * @param {*} conversation a conversation from database
+   */
+  static async deleteConversation(conversation) {
+    try {
+      await sequelize.transaction(async (t) => {
+        conversation.destroy({transaction: t});
+      });
+    } catch (err) {
+      console.log('deleteConversation error: ', err.message);
+      throw new ReqError(400, 'Cannot destroy the conversation');
+    }
+  }
 }
 
 export default ConversationService;
