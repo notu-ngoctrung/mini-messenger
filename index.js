@@ -53,5 +53,4 @@ http.listen(port, async () => {
       .catch((err) => {
         console.log('failed to connect to database', err);
       });
-  await sequelize.sync();
 });
