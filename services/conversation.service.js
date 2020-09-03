@@ -25,7 +25,7 @@ class ConversationService {
             {
               model: Message,
               as: 'messages',
-              attributes: ['content'],
+              attributes: ['sender', 'content'],
             },
             {
               model: User,

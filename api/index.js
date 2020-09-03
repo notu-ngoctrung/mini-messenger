@@ -83,7 +83,7 @@ router.put('/api/conversation/delete', verifyRequest, ConversationController.del
  * Request: {
  *    method: POST,
  *    headers: {Content-Type, Authorization},
- *    body: {receiver, content}
+ *    body: {receiver, sender, content}
  * }
  * Response: {
  *    status: 200/400 (with an error message)

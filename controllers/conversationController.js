@@ -77,7 +77,7 @@ class ConversationController {
       if (conversation == null) {
         res.status(400).send('Cannot find the conversation to post message');
       } else {
-        await MessageService.createAMessage(conversation.id, req.body.content);
+        await MessageService.createAMessage(conversation.id, req.body.sender, req.body.content);
         res.status(200).send('Message is posted successfully');
       }
     } catch (err) {
